@@ -1,0 +1,6 @@
+[package]
+name = "rusty-broccoli"
+version = "0.1.0"
+authors = ["vstrand", "trondhe"]
+
+[dependencies]

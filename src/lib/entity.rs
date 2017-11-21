@@ -1,9 +1,10 @@
 pub trait EntityTrait {
-	fn new() -> Entity;
+	fn new(entity_type: EntityType) -> Entity;
 	fn get_state(&self) -> &EntityState;
 	fn set_state(&mut self, state: &EntityState);
 	fn get_position(&self) -> &Position;
 	fn set_position(&mut self, position: &Position);
+	fn get_type(&self) -> &EntityType;
 }
 
 pub trait EntityStateTrait {
@@ -17,14 +18,21 @@ pub trait PositionTrait {
 ////////////////////////////////////
 
 #[derive(PartialEq, Debug)]
+pub enum EntityType {
+	Player,
+}
+
+#[derive(PartialEq, Debug)]
 pub struct Entity {
 	state: EntityState,
+	entity_type: EntityType,
 }
 
 impl EntityTrait for Entity {
-	fn new() -> Entity {
+	fn new(entity_type: EntityType) -> Entity {
 		Entity {
 			state: EntityState::new(),
+			entity_type,
 		}
 	}
 
@@ -42,6 +50,10 @@ impl EntityTrait for Entity {
 
 	fn set_position(&mut self, position: &Position) {
 		self.state.position = position.clone();
+	}
+
+	fn get_type(&self) -> &EntityType {
+		&self.entity_type
 	}
 }
 
@@ -81,6 +93,10 @@ impl PositionTrait for Position {
 mod entity_test {
 	use super::*;
 
+	fn make_entity(entity_type: EntityType) -> Entity {
+		Entity::new(entity_type)
+	}
+
 	fn make_position(x: f32, y: f32, z: f32) -> Position {
 		let mut position = Position::new();
 		
@@ -93,7 +109,7 @@ mod entity_test {
 
 	#[test]
 	fn new_entity_has_zero_state() {
-		let entity = Entity::new();
+		let entity = make_entity(EntityType::Player);
 		let state = entity.get_state();
 		assert_eq!(state, &EntityState::new());
 	}
@@ -107,7 +123,7 @@ mod entity_test {
 
 	#[test]
 	fn can_update_entity_state() {
-		let mut entity = Entity::new();
+		let mut entity = make_entity(EntityType::Player);
 		let mut state = EntityState::new();
 		state.health = 100.0;
 		state.position = Position::new();
@@ -126,19 +142,24 @@ mod entity_test {
 
 	#[test]
 	fn can_get_entity_position() {
-		let entity = Entity::new();
+		let entity = make_entity(EntityType::Player);
 		assert_eq!(entity.get_position(), &Position::new());
 	}
 
 	#[test]
 	fn can_update_entity_position() {
 		let position = make_position(1.0, 2.0, 3.0);
-		let mut entity = Entity::new();
+		let mut entity = make_entity(EntityType::Player);
 		entity.set_position(&position);
 		assert_eq!(entity.get_position(), &position);
 	}
-}
 
+	#[test]
+	fn can_create_entity_player() {
+		let player = make_entity(EntityType::Player);
+		assert_eq!(player.get_type(), &EntityType::Player);
+	}
+}
 
 
 // fn setup<F>(tf: F)

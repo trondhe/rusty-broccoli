@@ -1,14 +1,14 @@
 use entity::entity::*;
 
-trait EntityFactoryTrait {
-    fn new(entity_type: EntityType) -> Entity;
+pub trait EntityFactoryTrait {
+    fn new_player() -> Entity;
 }
 
-struct EntityFactory {}
+pub struct EntityFactory {}
 
 impl EntityFactoryTrait for EntityFactory {
-    fn new(entity_type: EntityType) -> Entity {
-        let mut entity = Entity::new(entity_type);
+    fn new_player() -> Entity {
+        let mut entity = Entity::new(EntityType::Player);
         entity.set_state(&new_player_default_state());
         entity
     }
@@ -26,7 +26,7 @@ mod entity_factory_test {
     
     #[test]
     fn can_create_player_with_defaults() {
-        let player = EntityFactory::new(EntityType::Player);
+        let player = EntityFactory::new_player();
         assert_eq!(player.get_type(), &EntityType::Player);
         assert_eq!(player.get_state().health, 100.0);
     }

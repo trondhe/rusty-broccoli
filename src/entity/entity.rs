@@ -59,7 +59,7 @@ impl EntityTrait for Entity {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct EntityState {
-	health: f32,
+	pub health: f32,
 	position: Position,
 }
 

@@ -1,4 +1,4 @@
-mod lib;
+mod entity;
 
 fn main() {
     // use entity::*;

@@ -1,19 +1,27 @@
+use std::thread;
+
+use threadpool::ThreadPool;
+
 trait JobHandlerTrait {
     fn new() -> JobHandler;
-    fn push(&mut self);
+    fn set_threadpool(&mut self, pool_size: &usize);
 }
 
-struct JobHandler {}
+struct JobHandler {
+    pool: ThreadPool,
+}
 
 impl JobHandlerTrait for JobHandler {
     fn new() -> JobHandler {
         JobHandler {
+            pool: ThreadPool::new(1),
         }
     }
 
-    fn push(&mut self) {}
+    fn set_threadpool(&mut self, pool_size: &usize) {
+        self.pool = ThreadPool::new(*pool_size)
+    }
 }
-
 
 #[cfg(test)]
 mod job_handler_test {
@@ -24,31 +32,11 @@ mod job_handler_test {
         let job_handler = JobHandler::new();
     }
 
-    fn do_damage() {
-
+    #[test]
+    fn can_set_threadpool() {
+        let pool_size: usize = 10;
+        let mut job_handler = JobHandler::new();
+        job_handler.set_threadpool(&pool_size);
+        assert_eq!(job_handler.pool.pool_size(), pool_size);
     }
-
-    fn on_damage() {
-
-    }
-    
-    // #[test]
-    // fn can_add_job_to_queue() {
-    //     let mut job_handler = JobHandler::new();
-    //     job_handler.push({
-    //         w: &do_damage, 
-    //         c: &on_damage 
-    //     }, JobHandlerPriority::Normal);
-    // }
-
-    // fn worker() {
-    //     // fetch work from queue
-    //     let f = pop();
-        
-    //     let c = f.callback;
-    //     let w = f.work;
-        
-    //     spawn(w, c);
-
-    // }
 }

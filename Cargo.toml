@@ -1,5 +1,5 @@
 [package]
-name = "rusty-broccoli"
+name = "rusty_broccoli"
 version = "0.1.0"
 authors = ["vstrand", "trondhe"]
 

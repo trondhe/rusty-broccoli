@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["vstrand", "trondhe"]
 
 [dependencies]
+vulkano = "0.7"
+vulkano-win = "0.7"
+winit = "0.7"

@@ -99,11 +99,11 @@ mod entity_test {
 
 	fn make_position(x: f32, y: f32, z: f32) -> Position {
 		let mut position = Position::new();
-		
+
 		position.x = x;
 		position.y = y;
 		position.z = z;
-		
+
 		position
 	}
 
@@ -127,7 +127,7 @@ mod entity_test {
 		let mut state = EntityState::new();
 		state.health = 100.0;
 		state.position = Position::new();
-		
+
 		entity.set_state(&state);
 		assert_eq!(entity.get_state(), &state);
 	}
@@ -160,7 +160,6 @@ mod entity_test {
 		assert_eq!(player.get_type(), &EntityType::Player);
 	}
 }
-
 
 // fn setup<F>(tf: F)
 // where F: Fn (&TestFixture) {

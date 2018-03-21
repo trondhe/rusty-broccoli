@@ -36,14 +36,14 @@ pub fn make_events_loop() -> EventsLoop {
     EventsLoop::new()
 }
 
-pub fn make_window(window_config: &WindowConfig) -> Arc<Surface<Window>> {
+pub fn make_window(config: &WindowConfig) -> Arc<Surface<Window>> {
     let builder = WindowBuilder::new()
-        .with_dimensions(window_config.width, window_config.height)
-        .with_title(window_config.title.clone());
+        .with_dimensions(config.width, config.height)
+        .with_title(config.title.clone());
 
     builder.build_vk_surface(
-        window_config.events_loop,
-        window_config.instance.clone()
+        config.events_loop,
+        config.instance.clone()
     ).unwrap()
 }
 

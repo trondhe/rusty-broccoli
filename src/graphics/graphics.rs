@@ -1,18 +1,7 @@
-//
-// How to use:
-//
-// let instance = Graphics::get_instance();
-// let physical = Graphics::get_physical(&instance);
-//
-// ... create a window instance
-//
-// let queue = Graphics::get_queue(physical, &window);
-//
-// ... display window/loop etc.
-//
-
 use vulkano_win;
 use vulkano;
+
+use winit::Window;
 
 use vulkano::instance::{
     Instance,
@@ -23,9 +12,32 @@ use vulkano::instance::{
 use vulkano::device::{
     Device,
     QueuesIter,
+    Queue,
 };
 
+use vulkano::swapchain::{
+    Swapchain,
+    SurfaceTransform,
+    PresentMode,
+    Surface,
+    Capabilities,
+};
+
+use vulkano::sync::SharingMode;
+
+use vulkano::image::SwapchainImage;
+
+use vulkano_win::VkSurfaceBuild;
+
 use std::sync::Arc;
+
+pub struct SwapchainConfig<'a> {
+    pub surface: &'a Arc<Surface<Window>>,
+    pub capabilities: &'a Capabilities,
+    pub dimensions: &'a [u32; 2],
+    pub device: &'a Arc<Device>,
+    pub queue: &'a Arc<Queue>,
+}
 
 pub struct Graphics { }
 
@@ -42,11 +54,11 @@ impl Graphics {
             .expect("No physical device available.")
     }
 
-    pub fn get_queue<'a>(physical: PhysicalDevice<'a>, window: &vulkano_win::Window) -> QueueFamily<'a> {
+    pub fn get_queue<'a>(physical: PhysicalDevice<'a>, surface: &Surface<Window>) -> QueueFamily<'a> {
         physical
             .queue_families()
             .find(|&q| {
-                let is_surface_supported = window.surface()
+                let is_surface_supported = surface
                     .is_supported(q)
                     .unwrap_or(false);
 
@@ -67,5 +79,36 @@ impl Graphics {
             &device_ext,
             [(queue, 0.5)].iter().cloned()
         ).expect("Failed to create device.")
+    }
+
+    pub fn get_capabilities<'a>(surface: &Arc<Surface<Window>>, physical: PhysicalDevice<'a>) -> Capabilities {
+        surface.capabilities(physical)
+            .expect("Failed to get surface capabilities.")
+    }
+
+    pub fn get_dimensions(capabilities: &Capabilities) -> [u32; 2] {
+        capabilities.current_extent.unwrap_or([1024, 768])
+    }
+
+    pub fn get_swapchain(config: &SwapchainConfig) -> (Arc<Swapchain<Window>>, Vec<Arc<SwapchainImage<Window>>>) {
+        let alpha = config.capabilities.supported_composite_alpha.iter().next().unwrap();
+
+        let format = config.capabilities.supported_formats[0].0;
+
+        Swapchain::new(
+            config.device.clone(),
+            config.surface.clone(),
+            config.capabilities.min_image_count,
+            format,
+            *config.dimensions,
+            1,
+            config.capabilities.supported_usage_flags,
+            SharingMode::from(config.queue),
+            SurfaceTransform::Identity,
+            alpha,
+            PresentMode::Fifo,
+            true,
+            None,
+        ).expect("Failed to create swapchain.")
     }
 }

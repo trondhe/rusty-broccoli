@@ -11,7 +11,7 @@ extern crate vulkano_win;
 extern crate winit;
 
 use win::interface;
-use graphics::graphics::Graphics;
+use graphics::graphics::*;
 
 use std::sync::Arc;
 
@@ -28,10 +28,24 @@ fn main() {
         events_loop: &mut events_loop,
         instance: &instance,
     };
-    let window = interface::make_window(&window_config);
+    let surface = interface::make_window(&window_config);
 
-    let queue = Graphics::get_queue(physical, &window);
-    let (device, queues) = Graphics::get_device(physical, queue);
+    let queue = Graphics::get_queue(physical, &surface);
+    let (device, mut queues) = Graphics::get_device(physical, queue);
+
+    let queue = queues.next().unwrap();
+
+    let capabilities = Graphics::get_capabilities(&surface, physical);
+    let dimensions = Graphics::get_dimensions(&capabilities);
+
+    let swapchain_config = SwapchainConfig {
+        surface: &surface,
+        capabilities: &capabilities,
+        dimensions: &dimensions,
+        device: &device,
+        queue: &queue,
+    };
+    let (mut swapchain, mut images) = Graphics::get_swapchain(&swapchain_config);
 
     interface::start_event_loop(window_config.events_loop);
 }

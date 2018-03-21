@@ -1,6 +1,7 @@
 use winit::{Event, EventsLoop, KeyboardInput, VirtualKeyCode, Window, WindowBuilder, WindowEvent};
 
 use vulkano::instance::Instance;
+use vulkano::swapchain::Surface;
 
 use vulkano_win;
 use vulkano_win::VkSurfaceBuild;
@@ -35,7 +36,7 @@ pub fn make_events_loop() -> EventsLoop {
     EventsLoop::new()
 }
 
-pub fn make_window(window_config: &WindowConfig) -> vulkano_win::Window {
+pub fn make_window(window_config: &WindowConfig) -> Arc<Surface<Window>> {
     let builder = WindowBuilder::new()
         .with_dimensions(window_config.width, window_config.height)
         .with_title(window_config.title.clone());

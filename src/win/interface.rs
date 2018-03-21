@@ -16,13 +16,19 @@ pub fn keyboard_input_handler(input: KeyboardInput) {
     }
 }
 
-pub fn start_event_loop() {
-    let mut events_loop = EventsLoop::new();
-    let builder = WindowBuilder::new()
-        .with_dimensions(400, 400)
-        .with_title("rusty-brocolli");
-    let window = builder.build(&events_loop).unwrap();
+pub fn make_events_loop() -> EventsLoop {
+    EventsLoop::new()
+}
 
+pub fn make_window(title: &str, width: u32, height: u32, events_loop: &mut EventsLoop) -> Window {
+    let builder = WindowBuilder::new()
+        .with_dimensions(width, height)
+        .with_title(title);
+
+    builder.build(events_loop).unwrap()
+}
+
+pub fn start_event_loop(events_loop: &mut EventsLoop) {
     loop {
         events_loop.poll_events(|event| match event {
             Event::WindowEvent { window_id, event } => window_event_handler(event),

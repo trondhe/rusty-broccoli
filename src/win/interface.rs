@@ -1,5 +1,20 @@
 use winit::{Event, EventsLoop, KeyboardInput, VirtualKeyCode, Window, WindowBuilder, WindowEvent};
 
+use vulkano::instance::Instance;
+
+use vulkano_win;
+use vulkano_win::VkSurfaceBuild;
+
+use std::sync::Arc;
+
+pub struct WindowConfig<'a> {
+    pub title: String,
+    pub width: u32,
+    pub height: u32,
+    pub events_loop: &'a mut EventsLoop,
+    pub instance: &'a Arc<Instance>
+}
+
 pub fn window_event_handler(window_event: WindowEvent) {
     match window_event {
         WindowEvent::Resized(w, h) => {
@@ -20,12 +35,15 @@ pub fn make_events_loop() -> EventsLoop {
     EventsLoop::new()
 }
 
-pub fn make_window(title: &str, width: u32, height: u32, events_loop: &mut EventsLoop) -> Window {
+pub fn make_window(window_config: &WindowConfig) -> vulkano_win::Window {
     let builder = WindowBuilder::new()
-        .with_dimensions(width, height)
-        .with_title(title);
+        .with_dimensions(window_config.width, window_config.height)
+        .with_title(window_config.title.clone());
 
-    builder.build(events_loop).unwrap()
+    builder.build_vk_surface(
+        window_config.events_loop,
+        window_config.instance.clone()
+    ).unwrap()
 }
 
 pub fn start_event_loop(events_loop: &mut EventsLoop) {

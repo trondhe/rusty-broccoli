@@ -11,14 +11,18 @@
 // ... display window/loop etc.
 //
 
-extern crate vulkano;
-extern crate vulkano_win;
-extern crate winit;
+use vulkano_win;
+use vulkano;
 
 use vulkano::instance::{
     Instance,
     PhysicalDevice,
     QueueFamily,
+};
+
+use vulkano::device::{
+    Device,
+    QueuesIter,
 };
 
 use std::sync::Arc;
@@ -49,5 +53,19 @@ impl Graphics {
                 q.supports_graphics() && is_surface_supported
             })
             .expect("Could not find a graphical queue family.")
+    }
+
+    pub fn get_device<'a>(physical: PhysicalDevice<'a>, queue: QueueFamily<'a>) -> (Arc<Device>, QueuesIter) {
+        let device_ext = vulkano::device::DeviceExtensions {
+            khr_swapchain: true,
+            .. vulkano::device::DeviceExtensions::none()
+        };
+
+        Device::new(
+            physical,
+            physical.supported_features(),
+            &device_ext,
+            [(queue, 0.5)].iter().cloned()
+        ).expect("Failed to create device.")
     }
 }

@@ -115,6 +115,8 @@ fn main() {
         ).expect("failed to create swapchain")
     };
 
+    let mut x_pos: f32 = 0.0;
+
     let vertex_buffer = {
         #[derive(Debug, Clone)]
         struct Vertex {
@@ -127,13 +129,13 @@ fn main() {
             BufferUsage::all(),
             [
                 Vertex {
-                    position: [-0.5, 0.5],
+                    position: [-0.1 + x_pos, 0.5],
                 },
                 Vertex {
-                    position: [-0.5, -0.5],
+                    position: [-0.5 + x_pos, -0.5],
                 },
                 Vertex {
-                    position: [0.5, -0.5],
+                    position: [0.5 + x_pos, -0.5],
                 },
             ].iter()
                 .cloned(),
@@ -311,17 +313,7 @@ fn main() {
             }
         }
 
-        let mut done = false;
-
-        events_loop.poll_events(|ev| match ev {
-            winit::Event::WindowEvent {
-                event: winit::WindowEvent::Closed,
-                ..
-            } => done = true,
-            _ => (),
-        });
-
-        if done {
+        if interface::poll_event_loop(&mut events_loop, &mut x_pos) {
             return;
         }
     }

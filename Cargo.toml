@@ -7,3 +7,4 @@ authors = ["vstrand", "trondhe"]
 vulkano = "*"
 vulkano-win = "*"
 winit = "*"
+vulkano-shader-derive = "*"

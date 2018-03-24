@@ -13,7 +13,7 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
-use win::interface;
+use win::interface::*;
 use graphics::graphics::*;
 
 use vulkano_win::VkSurfaceBuild;
@@ -41,79 +41,35 @@ use std::sync::Arc;
 use std::mem;
 
 fn main() {
-    let mut events_loop = interface::make_events_loop();
+    let mut events_loop = Interface::make_events_loop();
+    let instance = Graphics::get_instance();
+    let physical = Graphics::get_physical(&instance);
 
-    let instance = {
-        let extensions = vulkano_win::required_extensions();
-        Instance::new(None, &extensions, None).expect("failed to create Vulkan instance")
+    let window_config = WindowConfig {
+        title: String::from("Wallaballa"),
+        width: 800,
+        height: 600,
+        instance: &instance,
     };
 
-    let physical = vulkano::instance::PhysicalDevice::enumerate(&instance)
-        .next()
-        .expect("no device available");
-
-    println!(
-        "Using device: {} (type: {:?})",
-        physical.name(),
-        physical.ty()
-    );
-
-    // let mut events_loop = winit::EventsLoop::new();
-
-    let surface = winit::WindowBuilder::new()
-        .build_vk_surface(&events_loop, instance.clone())
-        .unwrap();
-
-    let queue = physical
-        .queue_families()
-        .find(|&q| q.supports_graphics() && surface.is_supported(q).unwrap_or(false))
-        .expect("couldn't find a graphical queue family");
-
-    let (device, mut queues) = {
-        let device_ext = vulkano::device::DeviceExtensions {
-            khr_swapchain: true,
-            ..vulkano::device::DeviceExtensions::none()
-        };
-
-        Device::new(
-            physical,
-            physical.supported_features(),
-            &device_ext,
-            [(queue, 0.5)].iter().cloned(),
-        ).expect("failed to create device")
-    };
+    let surface = Interface::make_window(&window_config, &events_loop);
+    let queue = Graphics::get_queue(physical, &surface);
+    let (device, mut queues) = Graphics::get_device(physical, queue);
 
     let queue = queues.next().unwrap();
 
-    let mut dimensions;
+    let capabilities = Graphics::get_capabilities(&surface, physical);
+    let mut dimensions = Graphics::get_dimensions(&capabilities);
 
-    let (mut swapchain, mut images) = {
-        let caps = surface
-            .capabilities(physical)
-            .expect("failed to get surface capabilities");
-
-        dimensions = caps.current_extent.unwrap_or([1024, 768]);
-
-        let alpha = caps.supported_composite_alpha.iter().next().unwrap();
-
-        let format = caps.supported_formats[0].0;
-
-        Swapchain::new(
-            device.clone(),
-            surface.clone(),
-            caps.min_image_count,
-            format,
-            dimensions,
-            1,
-            caps.supported_usage_flags,
-            &queue,
-            SurfaceTransform::Identity,
-            alpha,
-            PresentMode::Fifo,
-            true,
-            None,
-        ).expect("failed to create swapchain")
+    let swapchain_config = SwapchainConfig {
+        surface: &surface,
+        capabilities: &capabilities,
+        device: &device,
+        queue: &queue,
     };
+
+    let (mut swapchain, mut images) =
+        Graphics::get_swapchain(&swapchain_config, dimensions.clone());
 
     let mut x_pos: f32 = 0.0;
 
@@ -313,7 +269,7 @@ fn main() {
             }
         }
 
-        if interface::poll_event_loop(&mut events_loop, &mut x_pos) {
+        if Interface::poll_event_loop(&mut events_loop, &mut x_pos) {
             return;
         }
     }

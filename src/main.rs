@@ -73,31 +73,6 @@ fn main() {
 
     let mut x_pos: f32 = 0.0;
 
-    let vertex_buffer = {
-        #[derive(Debug, Clone)]
-        struct Vertex {
-            position: [f32; 2],
-        }
-        impl_vertex!(Vertex, position);
-
-        CpuAccessibleBuffer::from_iter(
-            device.clone(),
-            BufferUsage::all(),
-            [
-                Vertex {
-                    position: [-0.1 + x_pos, 0.5],
-                },
-                Vertex {
-                    position: [-0.5 + x_pos, -0.5],
-                },
-                Vertex {
-                    position: [0.5 + x_pos, -0.5],
-                },
-            ].iter()
-                .cloned(),
-        ).expect("failed to create buffer")
-    };
-
     mod vs {
         #[derive(VulkanoShader)]
         #[ty = "vertex"]
@@ -215,6 +190,31 @@ fn main() {
                 }
                 Err(err) => panic!("{:?}", err),
             };
+
+        let vertex_buffer = {
+            #[derive(Debug, Clone)]
+            struct Vertex {
+                position: [f32; 2],
+            }
+            impl_vertex!(Vertex, position);
+
+            CpuAccessibleBuffer::from_iter(
+                device.clone(),
+                BufferUsage::all(),
+                [
+                    Vertex {
+                        position: [-0.1 + x_pos, 0.5],
+                    },
+                    Vertex {
+                        position: [-0.5 + x_pos, -0.5],
+                    },
+                    Vertex {
+                        position: [0.5 + x_pos, -0.5],
+                    },
+                ].iter()
+                    .cloned(),
+            ).expect("failed to create buffer")
+        };
 
         let command_buffer =
             AutoCommandBufferBuilder::primary_one_time_submit(device.clone(), queue.family())

@@ -48,8 +48,8 @@ impl Interface {
     pub fn keyboard_input_handler(input: KeyboardInput, x_pos: &mut f32) {
         if let Some(keycode) = input.virtual_keycode {
             match keycode {
-                VirtualKeyCode::A => *x_pos += 1.0,
-                VirtualKeyCode::D => *x_pos -= 1.0,
+                VirtualKeyCode::A => *x_pos -= 0.01,
+                VirtualKeyCode::D => *x_pos += 0.01,
                 _ => (),
             }
             println!("{:?} was pressed", keycode);

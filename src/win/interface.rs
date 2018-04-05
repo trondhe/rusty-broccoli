@@ -7,6 +7,9 @@ use vulkano_win;
 use vulkano_win::VkSurfaceBuild;
 
 use std::sync::Arc;
+use std::sync::mpsc::Sender;
+
+use threadpool;
 
 pub struct WindowConfig<'a> {
     pub title: String,
@@ -18,7 +21,7 @@ pub struct WindowConfig<'a> {
 pub struct Interface {}
 
 impl Interface {
-    pub fn poll_event_loop(events_loop: &mut EventsLoop, x_pos: &mut f32) -> bool {
+    pub fn poll_event_loop(events_loop: &mut EventsLoop, sender: &Arc<Sender<threadpool::Message>>) -> bool {
         let mut done: bool = false;
         events_loop.poll_events(|event| match event {
             Event::WindowEvent {
@@ -26,33 +29,39 @@ impl Interface {
                 ..
             } => done = true,
             Event::WindowEvent { window_id, event } => {
-                Interface::window_event_handler(event, x_pos)
+                Interface::window_event_handler(event, sender)
             }
             _ => (),
         });
         done
     }
 
-    pub fn window_event_handler(window_event: WindowEvent, x_pos: &mut f32) {
+    pub fn window_event_handler(window_event: WindowEvent, sender: &Arc<Sender<threadpool::Message>>) {
         match window_event {
             WindowEvent::Resized(w, h) => {
                 println!("Window resized to {}x{}", w, h);
             }
             WindowEvent::KeyboardInput { device_id, input } => {
-                Interface::keyboard_input_handler(input, x_pos)
+                Interface::keyboard_input_handler(input, sender)
             }
             _ => (),
         }
     }
 
-    pub fn keyboard_input_handler(input: KeyboardInput, x_pos: &mut f32) {
+    pub fn keyboard_input_handler(input: KeyboardInput, sender: &Arc<Sender<threadpool::Message>>) {
         if let Some(keycode) = input.virtual_keycode {
-            match keycode {
-                VirtualKeyCode::A => *x_pos -= 0.01,
-                VirtualKeyCode::D => *x_pos += 0.01,
-                _ => (),
+            // match keycode {
+            //     VirtualKeyCode::A => (),
+            //     VirtualKeyCode::D => (),
+            //     _ => (),
+            // }
+
+            if keycode == VirtualKeyCode::A {
+                let job = Box::new(move || {
+                    println!("{:?} was pressed", keycode);
+                });
+                sender.send(threadpool::Message::NewJob(job)).unwrap();
             }
-            println!("{:?} was pressed", keycode);
         }
     }
 

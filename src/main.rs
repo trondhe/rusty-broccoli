@@ -82,13 +82,17 @@ fn main() {
     let gamestate = GameState::new();
 
     let mut handler = JobHandler::new();
-    handler.set_gamestate(gamestate);
+    handler.set_gamestate(gamestate.clone());
     handler.set_threadpool(&10);
 
     let sender = handler.get_sender();
 
+    let interface = Interface {
+        gamestate: gamestate.clone(),
+    };
+
     loop {
-        if Interface::poll_event_loop(&mut events_loop, &sender) {
+        if interface.poll_event_loop(&mut events_loop, &sender) {
             return;
         }
     }

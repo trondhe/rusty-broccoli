@@ -7,9 +7,11 @@ use vulkano_win;
 use vulkano_win::VkSurfaceBuild;
 
 use std::sync::Arc;
+use std::sync::RwLock;
 use std::sync::mpsc::Sender;
 
 use threadpool;
+use gamestate::GameState;
 
 pub struct WindowConfig<'a> {
     pub title: String,
@@ -18,10 +20,16 @@ pub struct WindowConfig<'a> {
     pub instance: &'a Arc<Instance>,
 }
 
-pub struct Interface {}
+pub struct Interface<'a> {
+    gamestate: Arc<RwLock<GameState<'a>>>,
+}
 
-impl Interface {
-    pub fn poll_event_loop(events_loop: &mut EventsLoop, sender: &Arc<Sender<threadpool::Message>>) -> bool {
+impl<'a> Interface<'a> {
+    pub fn poll_event_loop(
+        &self,
+        events_loop: &mut EventsLoop,
+        sender: &Arc<Sender<threadpool::Message>>,
+    ) -> bool {
         let mut done: bool = false;
         events_loop.poll_events(|event| match event {
             Event::WindowEvent {
@@ -29,26 +37,34 @@ impl Interface {
                 ..
             } => done = true,
             Event::WindowEvent { window_id, event } => {
-                Interface::window_event_handler(event, sender)
+                Interface::window_event_handler(self, event, sender)
             }
             _ => (),
         });
         done
     }
 
-    pub fn window_event_handler(window_event: WindowEvent, sender: &Arc<Sender<threadpool::Message>>) {
+    pub fn window_event_handler(
+        &self,
+        window_event: WindowEvent,
+        sender: &Arc<Sender<threadpool::Message>>,
+    ) {
         match window_event {
             WindowEvent::Resized(w, h) => {
                 println!("Window resized to {}x{}", w, h);
             }
             WindowEvent::KeyboardInput { device_id, input } => {
-                Interface::keyboard_input_handler(input, sender)
+                Interface::keyboard_input_handler(self, input, sender)
             }
             _ => (),
         }
     }
 
-    pub fn keyboard_input_handler(input: KeyboardInput, sender: &Arc<Sender<threadpool::Message>>) {
+    pub fn keyboard_input_handler(
+        &self,
+        input: KeyboardInput,
+        sender: &Arc<Sender<threadpool::Message>>,
+    ) {
         if let Some(keycode) = input.virtual_keycode {
             // match keycode {
             //     VirtualKeyCode::A => (),
@@ -58,7 +74,9 @@ impl Interface {
 
             if keycode == VirtualKeyCode::A {
                 let job = Box::new(move || {
-                    println!("{:?} was pressed", keycode);
+                    let mut state = self.gamestate.write().unwrap();
+                    state.test_var += 1;
+                    // println!("{:?} was pressed", keycode);
                 });
                 sender.send(threadpool::Message::NewJob(job)).unwrap();
             }

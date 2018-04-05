@@ -1,25 +1,26 @@
 use std::thread;
 use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::RwLock;
 
 use threadpool::Message;
 use threadpool::ThreadPool;
 use gamestate::GameState;
 
-pub trait JobHandlerTrait {
-    fn new() -> JobHandler;
+pub trait JobHandlerTrait<'a> {
+    fn new() -> JobHandler<'a>;
     fn set_threadpool(&mut self, pool_size: &usize);
     fn get_sender(&self) -> Arc<mpsc::Sender<Message>>;
-    fn set_gamestate(&mut self, gamestate: GameState);
+    fn set_gamestate(&mut self, gamestate: Arc<RwLock<GameState>>);
 }
 
-pub struct JobHandler {
+pub struct JobHandler<'a> {
     pool: ThreadPool,
-    gamestate: Option<GameState>,
+    gamestate: Option<Arc<RwLock<GameState<'a>>>>,
 }
 
-impl JobHandlerTrait for JobHandler {
-    fn new() -> JobHandler {
+impl<'a> JobHandlerTrait<'a> for JobHandler<'a> {
+    fn new() -> JobHandler<'a> {
         JobHandler {
             pool: ThreadPool::new(1),
             gamestate: None,
@@ -34,8 +35,8 @@ impl JobHandlerTrait for JobHandler {
         self.pool.get_sender()
     }
 
-    fn set_gamestate(&mut self, gamestate: GameState) {
-        self.gamestate = Some(gamestate.clone());
+    fn set_gamestate(&mut self, gamestate: Arc<RwLock<GameState>>) {
+        self.gamestate = Some(gamestate);
     }
 }
 

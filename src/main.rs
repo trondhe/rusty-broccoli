@@ -93,17 +93,18 @@ fn main() {
 
     let interface = Interface {
         gamestate: gamestate.clone(),
+        sender: sender.clone(),
     };
 
     loop {
         let gs2 = gamestate.clone();
         let job = Box::new(move || {
             let state = gs2.read().unwrap();
-            println!("State val is: {:?}", state);
+            println!("{:?}", state.keyboard_state.key_map.get("key_a"));
         });
         sender.send(threadpool::Message::NewJob(job)).unwrap();
-        sleep_ms(100);
-        if interface.poll_event_loop(&mut events_loop, &sender) {
+        sleep_ms(1);
+        if interface.poll_event_loop(&mut events_loop) {
             return;
         }
     }

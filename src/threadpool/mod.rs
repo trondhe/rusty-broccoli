@@ -3,7 +3,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-enum Message {
+pub enum Message {
     NewJob(Job),
     Terminate,
 }
@@ -13,7 +13,7 @@ pub struct ThreadPool {
     sender: mpsc::Sender<Message>,
 }
 
-trait FnBox {
+pub trait FnBox {
     fn call_box(self: Box<Self>);
 }
 
@@ -44,6 +44,10 @@ impl ThreadPool {
 
     pub fn pool_size(&self) -> usize {
         self.workers.len()
+    }
+
+    pub fn get_sender(&self) -> Arc<mpsc::Sender<Message>> {
+        Arc::from(self.sender.clone())
     }
 }
 

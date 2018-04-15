@@ -6,12 +6,12 @@ use vulkano::swapchain::Surface;
 use vulkano_win;
 use vulkano_win::VkSurfaceBuild;
 
+use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::RwLock;
-use std::sync::mpsc::Sender;
 
-use threadpool;
 use gamestate::GameState;
+use threadpool;
 
 pub struct WindowConfig<'a> {
     pub title: String,
@@ -20,11 +20,11 @@ pub struct WindowConfig<'a> {
     pub instance: &'a Arc<Instance>,
 }
 
-pub struct Interface<'a> {
-    gamestate: Arc<RwLock<GameState<'a>>>,
+pub struct Interface {
+    pub gamestate: Arc<RwLock<GameState>>,
 }
 
-impl<'a> Interface<'a> {
+impl Interface {
     pub fn poll_event_loop(
         &self,
         events_loop: &mut EventsLoop,
@@ -73,8 +73,9 @@ impl<'a> Interface<'a> {
             // }
 
             if keycode == VirtualKeyCode::A {
+                let state_ref = self.gamestate.clone();
                 let job = Box::new(move || {
-                    let mut state = self.gamestate.write().unwrap();
+                    let mut state = state_ref.write().unwrap();
                     state.test_var += 1;
                     // println!("{:?} was pressed", keycode);
                 });

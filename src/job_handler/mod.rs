@@ -7,20 +7,20 @@ use threadpool::Message;
 use threadpool::ThreadPool;
 use gamestate::GameState;
 
-pub trait JobHandlerTrait<'a> {
-    fn new() -> JobHandler<'a>;
+pub trait JobHandlerTrait {
+    fn new() -> JobHandler;
     fn set_threadpool(&mut self, pool_size: &usize);
     fn get_sender(&self) -> Arc<mpsc::Sender<Message>>;
     fn set_gamestate(&mut self, gamestate: Arc<RwLock<GameState>>);
 }
 
-pub struct JobHandler<'a> {
+pub struct JobHandler {
     pool: ThreadPool,
-    gamestate: Option<Arc<RwLock<GameState<'a>>>>,
+    gamestate: Option<Arc<RwLock<GameState>>>,
 }
 
-impl<'a> JobHandlerTrait<'a> for JobHandler<'a> {
-    fn new() -> JobHandler<'a> {
+impl JobHandlerTrait for JobHandler {
+    fn new() -> JobHandler {
         JobHandler {
             pool: ThreadPool::new(1),
             gamestate: None,

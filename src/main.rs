@@ -1,11 +1,11 @@
 #![allow(dead_code, unused_imports, unused_must_use, unused_variables)]
 mod entity;
-mod job_handler;
 mod examples;
+mod gamestate;
+mod graphics;
+mod job_handler;
 mod threadpool;
 mod win;
-mod graphics;
-mod gamestate;
 
 #[macro_use]
 extern crate vulkano;
@@ -14,11 +14,15 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
-use win::interface::*;
 use graphics::graphics::*;
+use win::interface::*;
 
-use job_handler::*;
 use gamestate::*;
+use job_handler::*;
+
+use std::thread::sleep;
+use std::thread::sleep_ms;
+use std::time::Duration;
 
 use vulkano_win::VkSurfaceBuild;
 
@@ -30,19 +34,19 @@ use vulkano::device::Device;
 use vulkano::framebuffer::Framebuffer;
 use vulkano::framebuffer::Subpass;
 use vulkano::instance::Instance;
-use vulkano::pipeline::GraphicsPipeline;
 use vulkano::pipeline::viewport::Viewport;
+use vulkano::pipeline::GraphicsPipeline;
 use vulkano::swapchain;
+use vulkano::swapchain::AcquireError;
 use vulkano::swapchain::PresentMode;
 use vulkano::swapchain::SurfaceTransform;
 use vulkano::swapchain::Swapchain;
-use vulkano::swapchain::AcquireError;
 use vulkano::swapchain::SwapchainCreationError;
 use vulkano::sync::now;
 use vulkano::sync::GpuFuture;
 
-use std::sync::Arc;
 use std::mem;
+use std::sync::Arc;
 
 fn main() {
     let mut events_loop = Interface::make_events_loop();
@@ -92,6 +96,13 @@ fn main() {
     };
 
     loop {
+        let gs2 = gamestate.clone();
+        let job = Box::new(move || {
+            let state = gs2.read().unwrap();
+            println!("State val is: {:?}", state);
+        });
+        sender.send(threadpool::Message::NewJob(job)).unwrap();
+        sleep_ms(100);
         if interface.poll_event_loop(&mut events_loop, &sender) {
             return;
         }

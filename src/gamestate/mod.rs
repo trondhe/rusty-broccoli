@@ -1,31 +1,26 @@
 use std::clone::Clone;
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 #[derive(Clone)]
-enum KeyState<'a> {
-    Pressed<'a>,
+enum KeyState {
+    Pressed,
     Released,
 }
 
 #[derive(Clone)]
-struct KeyboardState<'a> {
-    a: KeyState<'a>,
+struct KeyboardState {
+    a: KeyState,
 }
 
-#[derive(Clone)]
-pub struct GameState<'a> {
+#[derive(Clone, Debug)]
+pub struct GameState {
     pub test_var: i32,
-    pub keyboard_state: KeyboardState<'a>,
+    //pub keyboard_state: KeyboardState,
 }
 
-impl<'a> GameState<'a> {
-    pub fn new() -> Arc<RwLock<GameState<'a>>> {
-        Arc::new(RwLock::new(GameState {
-            test_var: 0,
-            keyboard_state: KeyboardState {
-                a: KeyState::Released,
-            },
-        }))
+impl GameState {
+    pub fn new() -> Arc<RwLock<GameState>> {
+        Arc::new(RwLock::new(GameState { test_var: 0 }))
     }
 }

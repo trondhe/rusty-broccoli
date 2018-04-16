@@ -45,9 +45,6 @@ impl KeyboardState {
         state.key_map.insert("key_x", KeyState::Released);
         state.key_map.insert("key_y", KeyState::Released);
         state.key_map.insert("key_z", KeyState::Released);
-        state.key_map.insert("key_ae", KeyState::Released);
-        state.key_map.insert("key_oe", KeyState::Released);
-        state.key_map.insert("key_aa", KeyState::Released);
         state.key_map.insert("key_1", KeyState::Released);
         state.key_map.insert("key_2", KeyState::Released);
         state.key_map.insert("key_3", KeyState::Released);
@@ -76,6 +73,9 @@ impl KeyboardState {
         state.key_map.insert("key_insert", KeyState::Released);
         state.key_map.insert("key_delete", KeyState::Released);
         state.key_map.insert("key_esc", KeyState::Released);
+        state.key_map.insert("key_backspace", KeyState::Released);
+        state.key_map.insert("key_return", KeyState::Released);
+        state.key_map.insert("key_space", KeyState::Released);
         return state;
     }
 }

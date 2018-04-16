@@ -100,7 +100,7 @@ fn main() {
         let gs2 = gamestate.clone();
         let job = Box::new(move || {
             let state = gs2.read().unwrap();
-            println!("{:?}", state.keyboard_state.key_map.get("key_a"));
+            //println!("{:?}", state.keyboard_state.key_map.get("key_a"));
         });
         sender.send(threadpool::Message::NewJob(job)).unwrap();
         sleep_ms(1);

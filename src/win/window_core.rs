@@ -1,12 +1,6 @@
 use winit::{ElementState, Event, EventsLoop, KeyboardInput, VirtualKeyCode, Window, WindowBuilder,
             WindowEvent};
 
-use vulkano::instance::Instance;
-use vulkano::swapchain::Surface;
-
-use vulkano_win;
-use vulkano_win::VkSurfaceBuild;
-
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -15,30 +9,43 @@ use gamestate::GameState;
 use gamestate::KeyState;
 use threadpool;
 
-pub struct WindowConfig<'a> {
-    pub title: String,
-    pub width: u32,
-    pub height: u32,
-    pub instance: &'a Arc<Instance>,
+// pub struct WindowConfig<'a> {
+//     pub title: String,
+//     pub width: u32,
+//     pub height: u32,
+//     pub instance: &'a Arc<Instance>,
+// }
+
+pub struct WindowCore {
+    gamestate: Arc<RwLock<GameState>>,
+    sender: Arc<Sender<threadpool::Message>>,
+    events_loop: EventsLoop,
 }
 
-pub struct Interface {
-    pub gamestate: Arc<RwLock<GameState>>,
-    pub sender: Arc<Sender<threadpool::Message>>,
-}
+impl WindowCore {
+    pub fn new(
+        gamestate: Arc<RwLock<GameState>>,
+        sender: Arc<Sender<threadpool::Message>>,
+    ) -> WindowCore {
+        WindowCore {
+            gamestate: gamestate,
+            sender: sender,
+            events_loop: EventsLoop::new(),
+        }
+    }
 
-impl Interface {
-    pub fn poll_event_loop(&self, events_loop: &mut EventsLoop) -> bool {
-        let mut done: bool = false;
-        events_loop.poll_events(|event| match event {
+    pub fn poll_event_loop(&mut self) -> bool {
+        let mut exit_main_loop: bool = false;
+        let closure = |event| match event {
             Event::WindowEvent {
                 event: WindowEvent::Closed,
                 ..
-            } => done = true,
-            Event::WindowEvent { window_id, event } => Interface::window_event_handler(self, event),
+            } => exit_main_loop = true,
+            Event::WindowEvent { window_id, event } => self.window_event_handler(event),
             _ => (),
-        });
-        done
+        };
+        self.events_loop.poll_events(closure);
+        exit_main_loop
     }
 
     pub fn window_event_handler(&self, window_event: WindowEvent) {
@@ -46,9 +53,7 @@ impl Interface {
             WindowEvent::Resized(w, h) => {
                 println!("Window resized to {}x{}", w, h);
             }
-            WindowEvent::KeyboardInput { device_id, input } => {
-                Interface::keyboard_input_handler(self, input)
-            }
+            WindowEvent::KeyboardInput { device_id, input } => self.keyboard_input_handler(input),
             _ => (),
         }
     }
@@ -130,17 +135,13 @@ impl Interface {
         self.sender.send(threadpool::Message::NewJob(job)).unwrap();
     }
 
-    pub fn make_events_loop() -> EventsLoop {
-        EventsLoop::new()
-    }
+    // pub fn make_window(config: &WindowConfig, events_loop: &EventsLoop) -> Arc<Surface<Window>> {
+    //     let builder = WindowBuilder::new()
+    //         .with_dimensions(config.width, config.height)
+    //         .with_title(config.title.clone());
 
-    pub fn make_window(config: &WindowConfig, events_loop: &EventsLoop) -> Arc<Surface<Window>> {
-        let builder = WindowBuilder::new()
-            .with_dimensions(config.width, config.height)
-            .with_title(config.title.clone());
-
-        builder
-            .build_vk_surface(events_loop, config.instance.clone())
-            .unwrap()
-    }
+    //     builder
+    //         .build_vk_surface(events_loop, config.instance.clone())
+    //         .unwrap()
+    // }
 }

@@ -3,8 +3,12 @@ name = "rusty_broccoli"
 version = "0.1.0"
 authors = ["vstrand", "trondhe"]
 
+[features]
+default = []
+vulkan = ["gfx-backend-vulkan"]
+
 [dependencies]
-vulkano = "*"
-vulkano-win = "*"
-winit = "*"
-vulkano-shader-derive = "*"
+winit = "0.11"
+glsl-to-spirv = "0.1"
+gfx-hal = { git = "https://github.com/gfx-rs/gfx.git", rev= "7a37468" }
+gfx-backend-vulkan = { git = "https://github.com/gfx-rs/gfx.git", rev= "7a37468", optional = true, features = ["glsl-to-spirv"] }

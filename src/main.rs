@@ -30,17 +30,17 @@ fn main() {
 
     let sender = handler.get_sender();
 
-    let interface = WindowCore::new(gamestate.clone(), sender.clone());
+    let mut window_core = WindowCore::new(gamestate.clone(), sender.clone());
 
     loop {
         let gs2 = gamestate.clone();
         let job = Box::new(move || {
             let state = gs2.read().unwrap();
-            //println!("{:?}", state.keyboard_state.key_map.get("key_a"));
+            println!("{:?}", state.keyboard_state.key_map.get("key_a"));
         });
         sender.send(threadpool::Message::NewJob(job)).unwrap();
         sleep(Duration::from_secs(1));
-        if interface.poll_event_loop() {
+        if window_core.poll_event_loop() {
             return;
         }
     }

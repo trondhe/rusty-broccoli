@@ -36,15 +36,23 @@ impl WindowCore {
 
     pub fn poll_event_loop(&mut self) -> bool {
         let mut exit_main_loop: bool = false;
-        let closure = |event| match event {
-            Event::WindowEvent {
-                event: WindowEvent::Closed,
-                ..
-            } => exit_main_loop = true,
-            Event::WindowEvent { window_id, event } => self.window_event_handler(event),
-            _ => (),
-        };
-        self.events_loop.poll_events(closure);
+
+        let mut event: Option<Event> = None;
+        self.events_loop.poll_events(|e| {
+            event = Some(e);
+        });
+
+        if let Some(event) = event {
+            match event {
+                Event::WindowEvent {
+                    event: WindowEvent::Closed,
+                    ..
+                } => exit_main_loop = true,
+                Event::WindowEvent { window_id, event } => self.window_event_handler(event),
+                _ => (),
+            }
+        }
+
         exit_main_loop
     }
 

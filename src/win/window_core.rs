@@ -9,28 +9,48 @@ use gamestate::GameState;
 use gamestate::KeyState;
 use threadpool;
 
-// pub struct WindowConfig<'a> {
-//     pub title: String,
-//     pub width: u32,
-//     pub height: u32,
-//     pub instance: &'a Arc<Instance>,
-// }
+pub struct WindowConfig {
+    pub title: String,
+    pub width: u32,
+    pub height: u32,
+}
+
+impl WindowConfig {
+    pub fn new(title: &str, width: u32, height: u32) -> WindowConfig {
+        WindowConfig {
+            title: String::from(title),
+            width: width,
+            height: height,
+        }
+    }
+}
 
 pub struct WindowCore {
     gamestate: Arc<RwLock<GameState>>,
     sender: Arc<Sender<threadpool::Message>>,
     events_loop: EventsLoop,
+    window: Window,
 }
 
 impl WindowCore {
     pub fn new(
         gamestate: Arc<RwLock<GameState>>,
         sender: Arc<Sender<threadpool::Message>>,
+        window_config: WindowConfig,
     ) -> WindowCore {
+        let events_loop = EventsLoop::new();
+
+        let window_builder = WindowBuilder::new()
+            .with_dimensions(window_config.width, window_config.height)
+            .with_title(window_config.title);
+
+        let window = window_builder.build(&events_loop).unwrap();
+
         WindowCore {
             gamestate: gamestate,
             sender: sender,
-            events_loop: EventsLoop::new(),
+            events_loop,
+            window,
         }
     }
 
@@ -142,14 +162,4 @@ impl WindowCore {
         });
         self.sender.send(threadpool::Message::NewJob(job)).unwrap();
     }
-
-    // pub fn make_window(config: &WindowConfig, events_loop: &EventsLoop) -> Arc<Surface<Window>> {
-    //     let builder = WindowBuilder::new()
-    //         .with_dimensions(config.width, config.height)
-    //         .with_title(config.title.clone());
-
-    //     builder
-    //         .build_vk_surface(events_loop, config.instance.clone())
-    //         .unwrap()
-    // }
 }

@@ -7,9 +7,11 @@ mod job_handler;
 mod threadpool;
 mod win;
 
+extern crate gfx_backend_vulkan as backend;
+extern crate gfx_hal as hal;
 extern crate winit;
 
-use graphics::graphics::*;
+use graphics::*;
 use win::window_core::*;
 
 use gamestate::*;
@@ -30,7 +32,11 @@ fn main() {
 
     let sender = handler.get_sender();
 
-    let mut window_core = WindowCore::new(gamestate.clone(), sender.clone());
+    let mut window_core = WindowCore::new(
+        gamestate.clone(),
+        sender.clone(),
+        WindowConfig::new("RUSTY BROCCOLI", 800, 600),
+    );
 
     loop {
         let gs2 = gamestate.clone();

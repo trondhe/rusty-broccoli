@@ -12,10 +12,10 @@ extern crate gfx_hal as hal;
 extern crate winit;
 
 use graphics::*;
-use win::window_core::*;
+use win::window_core::{WindowConfig, WindowCore};
 
-use gamestate::*;
-use job_handler::*;
+use gamestate::GameState;
+use job_handler::{JobHandler, JobHandlerTrait};
 
 use std::thread::sleep;
 use std::time::Duration;

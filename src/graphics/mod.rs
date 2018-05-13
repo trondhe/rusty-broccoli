@@ -1,13 +1,19 @@
 // #[cfg(any(feature = "vulkan"))]
 use backend;
 use hal;
-use hal::format::{ChannelType, Format};
+use hal::format::{ChannelType, Format, Swizzle};
 use hal::pool;
-use hal::{Device, Instance, PhysicalDevice, Surface};
+use hal::{Backbuffer, Device, Instance, PhysicalDevice, Surface, SwapchainConfig};
 
 use winit::Window;
 
 pub struct Graphics {}
+
+const COLOR_RANGE: hal::image::SubresourceRange = hal::image::SubresourceRange {
+    aspects: hal::format::Aspects::COLOR,
+    levels: 0..1,
+    layers: 0..1,
+};
 
 impl Graphics {
     pub fn setup(name: &str, window: &Window) {
@@ -15,7 +21,7 @@ impl Graphics {
         let app_version = 1;
 
         let instance = backend::Instance::create(name, app_version);
-        let surface = instance.create_surface(&window);
+        let mut surface = instance.create_surface(&window);
         let mut adapters = instance.enumerate_adapters();
 
         // TODO: Better handling of mulitple adapters
@@ -42,5 +48,33 @@ impl Graphics {
             max_buffers,
         );
         let mut queue = &mut queue_group.queues[0];
+
+        let swap_config = SwapchainConfig::new()
+            .with_color(surface_format)
+            .with_image_usage(hal::image::Usage::COLOR_ATTACHMENT);
+
+        let (mut swap_chain, backbuffer) = device.create_swapchain(&mut surface, swap_config);
+
+        let frame_images = match backbuffer {
+            Backbuffer::Images(images) => images
+                .into_iter()
+                .map(|image| {
+                    let rtv = device
+                        .create_image_view(
+                            &image,
+                            hal::image::ViewKind::D2,
+                            surface_format,
+                            Swizzle::NO,
+                            COLOR_RANGE,
+                        )
+                        .unwrap();
+                    (image, rtv)
+                })
+                .collect::<Vec<_>>(),
+            _ => unimplemented!(),
+        };
+
+        let mut frame_semaphore = device.create_semaphore();
+        let mut frame_fence = device.create_fence(false);
     }
 }
